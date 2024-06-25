@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    gcp:
+      project-id: tr4-2024-06-deutschebank
+      credentials:
+        location: classpath:tr4-2024-06-deutschebank-980dbd13eab7.json
+
+booking:
+  event:
+    subscription: "MyTopic-sub"
+
+server:
+  port: 8080
