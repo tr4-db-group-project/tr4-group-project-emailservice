@@ -1,4 +1,4 @@
-package com.tr4.db.emailservice.domain;
+package com.tr4.db.emailservice.model;
 
 public record Booking(
         String eventid,
