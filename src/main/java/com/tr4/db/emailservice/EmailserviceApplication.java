@@ -1,10 +1,12 @@
 package com.tr4.db.emailservice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.google.cloud.spring.pubsub.integration.AckMode;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
+import com.tr4.db.emailservice.domain.Booking;
 import com.tr4.db.emailservice.service.SendGridEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +36,6 @@ public class EmailserviceApplication {
     @Value("${booking.event.subscription}")
     private String subscription;
 
-    //This will go, as to email will have to be picked from the subscription json
-    @Value("${email.to}")
-    private String toEmail;
-
     @Autowired
     private SendGridEmailService sendGridEmailService;
 
@@ -54,26 +52,39 @@ public class EmailserviceApplication {
     }
 
     @Bean
-    public MessageChannel pubsubInputChannel() {
-        return new DirectChannel();
-    }
-
-    @Bean
     @ServiceActivator(inputChannel = "pubsubInputChannel")
     public MessageHandler messageReceiver() {
         return message -> {
+
+
             logger.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
             BasicAcknowledgeablePubsubMessage originalMessage =
                     message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
-            originalMessage.ack();
+            String payload = new String((byte[]) message.getPayload());
+            ObjectMapper objectMapper = new ObjectMapper();
+
 
             try {
-                sendGridEmailService.sendEmail(toEmail, "New Pub/Sub Message", "Message arrived! Payload: " + new String((byte[]) message.getPayload()));
+                Booking booking = objectMapper.readValue(payload, Booking.class);
+                String toEmail = booking.email();
+                String eventName = booking.eventName();
+                int numOfTickets = booking.numOfTickets();
+                String subject = "Booking for " + eventName ;
+
+                String body = "Thank you for your purchase! " +
+                        "We are pleased to inform you that your order for " + eventName + " is currently being processed. Here are the details of your reservation:\n\n" +
+                        "Event Name: " + eventName + "\n" +
+                        "Number of Tickets: " + numOfTickets + "\n\n" +
+                        "We will notify you once your booking is confirmed and your tickets are ready. Please allow us some time to complete the processing.\n\n" +
+                        "Best regards,\n" +
+                        "TR4 team";
+                sendGridEmailService.sendEmail(toEmail, subject, body);
+                originalMessage.ack(); // Acknowledge the message only if email is sent successfully
+                logger.info("Email sent to: " + toEmail);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Failed to parse JSON message", e);
+                originalMessage.nack();
             }
         };
     }
-
-
 }

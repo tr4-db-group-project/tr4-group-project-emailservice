@@ -16,7 +16,6 @@ sendgrid:
 
 email:
   from: ${FROM_EMAIL}
-  to: ${TO_EMAIL}
 
 server:
   port: 8080
