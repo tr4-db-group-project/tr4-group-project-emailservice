@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: classpath:.env.properties
   cloud:
     gcp:
       project-id: tr4-2024-06-deutschebank
@@ -8,6 +10,13 @@ spring:
 booking:
   event:
     subscription: "MyTopic-sub"
+
+sendgrid:
+  api-key: ${SEND_GRID_API_KEY}
+
+email:
+  from: ${FROM_EMAIL}
+  to: ${TO_EMAIL}
 
 server:
   port: 8080

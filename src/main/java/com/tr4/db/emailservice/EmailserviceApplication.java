@@ -5,8 +5,10 @@ import com.google.cloud.spring.pubsub.integration.AckMode;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
+import com.tr4.db.emailservice.service.SendGridEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +19,8 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+
+import java.io.IOException;
 
 
 @SpringBootApplication
@@ -29,6 +33,13 @@ public class EmailserviceApplication {
 
     @Value("${booking.event.subscription}")
     private String subscription;
+
+    //This will go, as to email will have to be picked from the subscription json
+    @Value("${email.to}")
+    private String toEmail;
+
+    @Autowired
+    private SendGridEmailService sendGridEmailService;
 
     @Bean
     public PubSubInboundChannelAdapter messageChannelAdapter(
@@ -55,6 +66,12 @@ public class EmailserviceApplication {
             BasicAcknowledgeablePubsubMessage originalMessage =
                     message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
             originalMessage.ack();
+
+            try {
+                sendGridEmailService.sendEmail(toEmail, "New Pub/Sub Message", "Message arrived! Payload: " + new String((byte[]) message.getPayload()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         };
     }
 
