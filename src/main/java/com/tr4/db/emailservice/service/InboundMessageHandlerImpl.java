@@ -29,7 +29,8 @@ public class InboundMessageHandlerImpl implements InboundMessageHandler {
     @Override
     public void handleMessage(Message<?> message) {
         BasicAcknowledgeablePubsubMessage originalMessage =
-                message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
+                message.getHeaders()
+                        .get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
 
         String payload = new String((byte[]) message.getPayload());
         try {
