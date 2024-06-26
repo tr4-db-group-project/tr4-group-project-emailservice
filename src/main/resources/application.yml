@@ -5,11 +5,11 @@ spring:
     gcp:
       project-id: tr4-2024-06-deutschebank
       credentials:
-        location: classpath:tr4-2024-06-deutschebank-980dbd13eab7.json
+        location:
 
 booking:
   event:
-    subscription: "MyTopic-sub"
+    subscription: "EmailSub"
 
 sendgrid:
   api-key: ${SEND_GRID_API_KEY}
@@ -18,4 +18,4 @@ email:
   from: ${FROM_EMAIL}
 
 server:
-  port: 8080
+  port: ${PORT:8080}
