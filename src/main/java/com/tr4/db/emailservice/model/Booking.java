@@ -1,8 +1,8 @@
 package com.tr4.db.emailservice.model;
 
 public record Booking(
-        String eventid,
+        java.util.UUID eventId,
         String eventName,
-        int numOfTickets,
+        Integer numberOfTickets,
         String email
 ) {}
