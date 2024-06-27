@@ -1,7 +1,5 @@
 package com.tr4.db.emailservice.service;
 
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 
 public interface SendGridEmailService {
